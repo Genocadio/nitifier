@@ -97,7 +97,7 @@ app.get('/', (req, res) => {
             }
         },
         documentation: {
-            supportedStatuses: ['received', 'resolved', 'escalated', 'assigned', 'closed', 'in_progress'],
+            supportedStatuses: ['received', 'resolved', 'escalated', 'assigned', 'closed', 'in_progress', 'waiting_for_user_response', 'overdue', 'incomplete'],
             supportedLanguages: ['english', 'french', 'kinyarwanda'],
             rateLimit: '100 requests per 15 minutes per IP'
         }
@@ -211,7 +211,7 @@ const server = app.listen(PORT, () => {
 
 📚 Supported:
    • Languages: english, french, kinyarwanda
-   • Statuses: received, resolved, escalated, assigned, closed, in_progress
+   • Statuses: received, resolved, escalated, assigned, closed, in_progress, waiting_for_user_response, overdue, incomplete
     `);
 });
 

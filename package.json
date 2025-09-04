@@ -1,7 +1,7 @@
 {
   "name": "notifier",
   "version": "1.0.0",
-  "description": "Email service for Customer Experience Support system with multilingual templates and SendGrid integration",
+  "description": "Email and SMS notification service for Customer Experience Support system with multilingual templates, SendGrid and Mista.io integration",
   "main": "server_app.js",
   "scripts": {
     "start": "node server_app.js",
@@ -16,18 +16,22 @@
   },
   "keywords": [
     "email",
+    "sms",
     "sendgrid",
+    "mista",
     "multilingual",
     "customer-support",
     "ces",
     "nodejs",
     "express",
-    "templates"
+    "templates",
+    "notifications"
   ],
   "author": "CES Team",
   "license": "MIT",
   "dependencies": {
     "@sendgrid/mail": "^7.7.0",
+    "axios": "^1.6.0",
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "helmet": "^7.0.0",

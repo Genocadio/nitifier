@@ -80,6 +80,45 @@ const templates = {
         kinyarwanda: {
             message: `Mwaramutse {name}, dukora ku kibazo {ticketId}. Tuzagufasha amakuru vuba. Kurikirana: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
         }
+    },
+
+    // Issue Waiting for User Response Templates
+    waiting_for_user_response: {
+        english: {
+            message: `Hi {name}, we need more info for issue {ticketId}. Please respond. Details: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        },
+        french: {
+            message: `Bonjour {name}, nous avons besoin de plus d'infos pour le problème {ticketId}. Veuillez répondre. Détails: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        },
+        kinyarwanda: {
+            message: `Mwaramutse {name}, dukeneye amakuru yongeyeho ku kibazo {ticketId}. Nyamuneka usubize. Ibisobanura: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        }
+    },
+
+    // Issue Overdue Templates
+    overdue: {
+        english: {
+            message: `Hi {name}, your issue {ticketId} is overdue. We're prioritizing it now. Track: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        },
+        french: {
+            message: `Bonjour {name}, votre problème {ticketId} est en retard. Nous le priorisons maintenant. Suivi: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        },
+        kinyarwanda: {
+            message: `Mwaramutse {name}, ikibazo {ticketId} cyarenganyijwe. Turaha ubwoba bwo kwitabwaho. Kurikirana: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        }
+    },
+
+    // Issue Incomplete Templates
+    incomplete: {
+        english: {
+            message: `Hi {name}, your issue {ticketId} is incomplete. Please provide missing info. Details: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        },
+        french: {
+            message: `Bonjour {name}, votre problème {ticketId} est incomplet. Veuillez fournir les infos manquantes. Détails: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        },
+        kinyarwanda: {
+            message: `Mwaramutse {name}, ikibazo {ticketId} kitagize. Nyamuneka utange amakuru atariho. Ibisobanura: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
+        }
     }
 };
 
@@ -215,3 +254,4 @@ module.exports = {
     validateTemplateLength,
     templates
 };
+

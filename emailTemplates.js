@@ -448,6 +448,219 @@ Urakoze kwihangana.
 Icyubahiro,
 Ikipe y'Ubufasha ya CES`
         }
+    },
+
+    // Issue Waiting for User Response Templates
+    waiting_for_user_response: {
+        english: {
+            subject: 'Issue {ticketId} Waiting for Your Response - CES Support',
+            body: `Hello {name},
+
+We need additional information from you to continue processing your issue.
+
+Issue Details:
+- Ticket ID: {ticketId}
+- Issue Title: {issueTitle}
+- Status: Waiting for User Response
+- Update Date: {currentDate}
+
+{responseMessage}
+
+Please provide the requested information so we can proceed with resolving your issue.
+
+Click here to view issue details: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Thank you for your cooperation.
+
+Best regards,
+CES Support Team`
+        },
+        french: {
+            subject: 'Problème {ticketId} En Attente de Votre Réponse - Support CES',
+            body: `Bonjour {name},
+
+Nous avons besoin d'informations supplémentaires de votre part pour continuer le traitement de votre problème.
+
+Détails du problème:
+- ID du ticket: {ticketId}
+- Titre du problème: {issueTitle}
+- Statut: En attente de votre réponse
+- Date de mise à jour: {currentDate}
+
+{responseMessage}
+
+Veuillez fournir les informations demandées afin que nous puissions procéder à la résolution de votre problème.
+
+Cliquez ici pour voir les détails du problème: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Merci pour votre coopération.
+
+Cordialement,
+Équipe de Support CES`
+        },
+        kinyarwanda: {
+            subject: 'Ikibazo {ticketId} Gitegereje Igisubizo Cyawe - Ubufasha bwa CES',
+            body: `Mwaramutse {name},
+
+Dukeneye amakuru yongeyeho kugira ngo dukomeze gukemura ikibazo cyawe.
+
+Ibisobanura by'ikibazo:
+- ID ya tiketi: {ticketId}
+- Umutwe w'ikibazo: {issueTitle}
+- Imimerere: Gitegereje igisubizo cyawe
+- Itariki yahinduwe: {currentDate}
+
+{responseMessage}
+
+Nyamuneka utange amakuru asabwa kugira ngo dushobore gukomeza gukemura ikibazo cyawe.
+
+Kanda hano kugira ngo urebe ibisobanura by'ikibazo: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Urakoze kwiyubaka.
+
+Icyubahiro,
+Ikipe y'Ubufasha ya CES`
+        }
+    },
+
+    // Issue Overdue Templates
+    overdue: {
+        english: {
+            subject: 'Issue {ticketId} Overdue - CES Support',
+            body: `Hello {name},
+
+Your issue has exceeded the expected resolution time and is now marked as overdue.
+
+Issue Details:
+- Ticket ID: {ticketId}
+- Issue Title: {issueTitle}
+- Status: Overdue
+- Update Date: {currentDate}
+
+We apologize for the delay and are prioritizing your issue for immediate attention. Our team is working to resolve this as quickly as possible.
+
+Click here to view issue details: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Thank you for your patience and understanding.
+
+Best regards,
+CES Support Team`
+        },
+        french: {
+            subject: 'Problème {ticketId} En Retard - Support CES',
+            body: `Bonjour {name},
+
+Votre problème a dépassé le temps de résolution prévu et est maintenant marqué comme étant en retard.
+
+Détails du problème:
+- ID du ticket: {ticketId}
+- Titre du problème: {issueTitle}
+- Statut: En retard
+- Date de mise à jour: {currentDate}
+
+Nous nous excusons pour le retard et donnons la priorité à votre problème pour une attention immédiate. Notre équipe travaille à le résoudre le plus rapidement possible.
+
+Cliquez ici pour voir les détails du problème: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Merci pour votre patience et votre compréhension.
+
+Cordialement,
+Équipe de Support CES`
+        },
+        kinyarwanda: {
+            subject: 'Ikibazo {ticketId} Cyarenganyijwe - Ubufasha bwa CES',
+            body: `Mwaramutse {name},
+
+Ikibazo cyawe cyarenganyijwe igihe cyari gitegereje cyo gukemurwa kandi gisigaye gikoresha.
+
+Ibisobanura by'ikibazo:
+- ID ya tiketi: {ticketId}
+- Umutwe w'ikibazo: {issueTitle}
+- Imimerere: Cyarenganyijwe
+- Itariki yahinduwe: {currentDate}
+
+Turababarira kubera gahunda kandi turaha ikibazo cyawe ubwoba bwo kwitabwaho vuba. Ikipe yacu ikora kugira ngo ikemure vuba bishoboka.
+
+Kanda hano kugira ngo urebe ibisobanura by'ikibazo: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Urakoze kwihangana no kwiyumva.
+
+Icyubahiro,
+Ikipe y'Ubufasha ya CES`
+        }
+    },
+
+    // Issue Incomplete Templates
+    incomplete: {
+        english: {
+            subject: 'Issue {ticketId} Incomplete - CES Support',
+            body: `Hello {name},
+
+Your issue submission is incomplete and requires additional information.
+
+Issue Details:
+- Ticket ID: {ticketId}
+- Issue Title: {issueTitle}
+- Status: Incomplete
+- Update Date: {currentDate}
+
+{responseMessage}
+
+Please provide the missing information so we can properly process your request.
+
+Click here to view issue details: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Thank you for your cooperation.
+
+Best regards,
+CES Support Team`
+        },
+        french: {
+            subject: 'Problème {ticketId} Incomplet - Support CES',
+            body: `Bonjour {name},
+
+Votre soumission de problème est incomplète et nécessite des informations supplémentaires.
+
+Détails du problème:
+- ID du ticket: {ticketId}
+- Titre du problème: {issueTitle}
+- Statut: Incomplet
+- Date de mise à jour: {currentDate}
+
+{responseMessage}
+
+Veuillez fournir les informations manquantes afin que nous puissions traiter correctement votre demande.
+
+Cliquez ici pour voir les détails du problème: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Merci pour votre coopération.
+
+Cordialement,
+Équipe de Support CES`
+        },
+        kinyarwanda: {
+            subject: 'Ikibazo {ticketId} Kitagize - Ubufasha bwa CES',
+            body: `Mwaramutse {name},
+
+Gusubira ikibazo cyawe kitagize kandi gikeneye amakuru yongeyeho.
+
+Ibisobanura by'ikibazo:
+- ID ya tiketi: {ticketId}
+- Umutwe w'ikibazo: {issueTitle}
+- Imimerere: Kitagize
+- Itariki yahinduwe: {currentDate}
+
+{responseMessage}
+
+Nyamuneka utange amakuru atariho kugira ngo dushobore gukemura neza icyifuzo cyawe.
+
+Kanda hano kugira ngo urebe ibisobanura by'ikibazo: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}
+
+Urakoze kwiyubaka.
+
+Icyubahiro,
+Ikipe y'Ubufasha ya CES`
+        }
     }
 };
 
