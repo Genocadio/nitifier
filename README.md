@@ -4,6 +4,15 @@ A Node.js email and SMS notification service for the Customer Experience Support
 
 > **Note**: This service was created as a separate microservice because DigitalOcean broke SMTP ports, making it impossible to send emails directly from the main application. The SMS functionality is deployed via Mist.io on Render for reliable delivery.
 
+> ⚠️ **Important Disclaimer**: Due to API costs and pricing limitations, emails and SMS messages may not be delivered in certain circumstances. This includes but is not limited to:
+> - Insufficient account balance or credits
+> - API rate limits and quotas
+> - Service provider outages or maintenance
+> - Invalid recipient addresses or phone numbers
+> - Spam filters or carrier blocking
+> 
+> Please monitor your SendGrid and Mist.io account status regularly and implement appropriate fallback mechanisms for critical notifications.
+
 ## Features
 
 - 🌍 **Multilingual Support**: English, French, and Kinyarwanda
@@ -460,6 +469,14 @@ PORT=3000
     - Consider bulk endpoints for multiple emails/SMS
     - Monitor rate limit headers
     - Check Mist.io API rate limits for SMS
+
+6. **Delivery Issues Due to Costs/API Limits**
+    - **SendGrid**: Check account balance and billing status
+    - **Mist.io**: Verify account credits and payment method
+    - **Monitoring**: Set up alerts for low account balances
+    - **Fallback**: Implement alternative notification methods for critical alerts
+    - **Cost Management**: Monitor usage patterns and optimize message frequency
+    - **Testing**: Regularly test with small batches to verify service availability
 
 ## Contributing
 
