@@ -12,6 +12,9 @@ const emailRoutes = require('./routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for rate limiting to work correctly behind reverse proxies
+app.set('trust proxy', true);
+
 // Validate environment configuration on startup
 const envValidation = validateEnvironmentConfig();
 if (!envValidation.isValid) {

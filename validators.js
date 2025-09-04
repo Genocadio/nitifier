@@ -133,7 +133,7 @@ function validateEmailRequest(emailData) {
     }
     
     // Optional fields validation
-    if (emailData.assignedTo !== undefined) {
+    if (emailData.assignedTo !== undefined && emailData.assignedTo !== null && emailData.assignedTo !== '') {
         if (typeof emailData.assignedTo !== 'string') {
             errors.push('assignedTo must be a string');
         } else if (emailData.assignedTo.trim() && !isValidName(emailData.assignedTo.trim())) {
@@ -141,7 +141,7 @@ function validateEmailRequest(emailData) {
         }
     }
     
-    if (emailData.escalatedTo !== undefined) {
+    if (emailData.escalatedTo !== undefined && emailData.escalatedTo !== null && emailData.escalatedTo !== '') {
         if (typeof emailData.escalatedTo !== 'string') {
             errors.push('escalatedTo must be a string');
         } else if (emailData.escalatedTo.trim() && !isValidName(emailData.escalatedTo.trim())) {
@@ -149,7 +149,7 @@ function validateEmailRequest(emailData) {
         }
     }
     
-    if (emailData.issueTitle !== undefined) {
+    if (emailData.issueTitle !== undefined && emailData.issueTitle !== null && emailData.issueTitle !== '') {
         if (typeof emailData.issueTitle !== 'string') {
             errors.push('issueTitle must be a string');
         } else if (emailData.issueTitle.length > 200) {
@@ -157,7 +157,7 @@ function validateEmailRequest(emailData) {
         }
     }
     
-    if (emailData.responseMessage !== undefined) {
+    if (emailData.responseMessage !== undefined && emailData.responseMessage !== null && emailData.responseMessage !== '') {
         if (typeof emailData.responseMessage !== 'string') {
             errors.push('responseMessage must be a string');
         } else if (emailData.responseMessage.length > 2000) {
@@ -343,7 +343,7 @@ function validateSmsRequest(smsData) {
     }
     
     // Optional fields validation
-    if (smsData.assignedTo !== undefined) {
+    if (smsData.assignedTo !== undefined && smsData.assignedTo !== null && smsData.assignedTo !== '') {
         if (typeof smsData.assignedTo !== 'string') {
             errors.push('assignedTo must be a string');
         } else if (smsData.assignedTo.trim() && !isValidName(smsData.assignedTo.trim())) {
@@ -351,7 +351,7 @@ function validateSmsRequest(smsData) {
         }
     }
     
-    if (smsData.escalatedTo !== undefined) {
+    if (smsData.escalatedTo !== undefined && smsData.escalatedTo !== null && smsData.escalatedTo !== '') {
         if (typeof smsData.escalatedTo !== 'string') {
             errors.push('escalatedTo must be a string');
         } else if (smsData.escalatedTo.trim() && !isValidName(smsData.escalatedTo.trim())) {
@@ -359,7 +359,7 @@ function validateSmsRequest(smsData) {
         }
     }
     
-    if (smsData.issueTitle !== undefined) {
+    if (smsData.issueTitle !== undefined && smsData.issueTitle !== null && smsData.issueTitle !== '') {
         if (typeof smsData.issueTitle !== 'string') {
             errors.push('issueTitle must be a string');
         } else if (smsData.issueTitle.length > 200) {
@@ -367,7 +367,7 @@ function validateSmsRequest(smsData) {
         }
     }
     
-    if (smsData.responseMessage !== undefined) {
+    if (smsData.responseMessage !== undefined && smsData.responseMessage !== null && smsData.responseMessage !== '') {
         if (typeof smsData.responseMessage !== 'string') {
             errors.push('responseMessage must be a string');
         } else if (smsData.responseMessage.length > 2000) {
