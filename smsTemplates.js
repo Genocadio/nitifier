@@ -119,6 +119,32 @@ const templates = {
         kinyarwanda: {
             message: `Mwaramutse {name}, ikibazo {ticketId} kitagize. Nyamuneka utange amakuru atariho. Ibisobanura: https://ces-frontend-zeta.vercel.app/followup?id={ticketId}`
         }
+    },
+
+    // Trip Remaining Time Templates
+    trip_remaining_time: {
+        english: {
+            message: `Hi {name}, your trip to {destinationName} is on track. ETA: {remainingTime}. Safe travels!`
+        },
+        french: {
+            message: `Bonjour {name}, votre voyage vers {destinationName} est en cours. ETA: {remainingTime}. Bon voyage!`
+        },
+        kinyarwanda: {
+            message: `Mwaramutse {name}, urugendo rwawe rwo kujya {destinationName} rurakomeza. ETA: {remainingTime}. Urugendo rwiza!`
+        }
+    },
+
+    // Trip Arrival Notice Templates
+    trip_arrival_notice: {
+        english: {
+            message: `Hi {name}, welcome to {destinationName}! You have arrived safely. Enjoy your stay!`
+        },
+        french: {
+            message: `Bonjour {name}, bienvenue à {destinationName}! Vous êtes arrivé en sécurité. Profitez de votre séjour!`
+        },
+        kinyarwanda: {
+            message: `Mwaramutse {name}, murakaza neza {destinationName}! Wazanye neza. Urugendo rwiza!`
+        }
     }
 };
 

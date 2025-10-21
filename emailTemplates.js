@@ -661,6 +661,170 @@ Urakoze kwiyubaka.
 Icyubahiro,
 Ikipe y'Ubufasha ya CES`
         }
+    },
+
+    // Trip Remaining Time Templates
+    trip_remaining_time: {
+        english: {
+            subject: 'Trip Update - {destinationName}',
+            body: `Hello {name},
+
+Your trip to {destinationName} is progressing well.
+
+Trip Details:
+- Destination: {destinationName}
+- Remaining Time: {remainingTime}
+- Update Time: {currentDate}
+
+You will arrive at your destination in approximately {remainingTime}. Please ensure you're prepared for arrival.
+
+Safe travels!
+
+Best regards,
+CES Travel Team`,
+            htmlBody: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #2c3e50;">Trip Update</h2>
+                    <p>Hello <strong>{name}</strong>,</p>
+                    
+                    <p>Your trip to <strong>{destinationName}</strong> is progressing well.</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="color: #495057; margin-top: 0;">Trip Details:</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li><strong>Destination:</strong> {destinationName}</li>
+                            <li><strong>Remaining Time:</strong> <span style="color: #28a745;">{remainingTime}</span></li>
+                            <li><strong>Update Time:</strong> {currentDate}</li>
+                        </ul>
+                    </div>
+                    
+                    <p>You will arrive at your destination in approximately <strong>{remainingTime}</strong>. Please ensure you're prepared for arrival.</p>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <p style="color: #28a745; font-size: 18px; font-weight: bold;">Safe travels!</p>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+                        <p style="color: #6c757d; margin: 0;">Best regards,<br>CES Travel Team</p>
+                    </div>
+                </div>
+            `
+        },
+        french: {
+            subject: 'Mise à jour du voyage - {destinationName}',
+            body: `Bonjour {name},
+
+Votre voyage vers {destinationName} se déroule bien.
+
+Détails du voyage:
+- Destination: {destinationName}
+- Temps restant: {remainingTime}
+- Heure de mise à jour: {currentDate}
+
+Vous arriverez à votre destination dans environ {remainingTime}. Veuillez vous assurer d'être prêt pour l'arrivée.
+
+Bon voyage!
+
+Cordialement,
+Équipe CES Voyage`
+        },
+        kinyarwanda: {
+            subject: 'Guhindura urugendo - {destinationName}',
+            body: `Mwaramutse {name},
+
+Urugendo rwawe rwo kujya {destinationName} rurakomeza neza.
+
+Ibisobanura by'urugendo:
+- Aho ujya: {destinationName}
+- Igihe gisigaye: {remainingTime}
+- Igihe cyahinduwe: {currentDate}
+
+Uzaza ku cyerekezo cyawe mu gihe cy'ibihumbi {remainingTime}. Nyamuneka witegure kugera.
+
+Urugendo rwiza!
+
+Icyubahiro,
+Ikipe y'Urugendo ya CES`
+        }
+    },
+
+    // Trip Arrival Notice Templates
+    trip_arrival_notice: {
+        english: {
+            subject: 'Arrival Notice - {destinationName}',
+            body: `Hello {name},
+
+You have arrived at your destination!
+
+Arrival Details:
+- Destination: {destinationName}
+- Arrival Time: {currentDate}
+
+Welcome to {destinationName}! We hope you had a pleasant journey.
+
+If you need any assistance, please don't hesitate to contact us.
+
+Best regards,
+CES Travel Team`,
+            htmlBody: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #28a745;">Arrival Notice</h2>
+                    <p>Hello <strong>{name}</strong>,</p>
+                    
+                    <p>You have arrived at your destination!</p>
+                    
+                    <div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
+                        <h3 style="color: #155724; margin-top: 0;">Arrival Details:</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li><strong>Destination:</strong> {destinationName}</li>
+                            <li><strong>Arrival Time:</strong> {currentDate}</li>
+                        </ul>
+                    </div>
+                    
+                    <p>Welcome to <strong>{destinationName}</strong>! We hope you had a pleasant journey.</p>
+                    
+                    <p>If you need any assistance, please don't hesitate to contact us.</p>
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+                        <p style="color: #6c757d; margin: 0;">Best regards,<br>CES Travel Team</p>
+                    </div>
+                </div>
+            `
+        },
+        french: {
+            subject: 'Avis d\'arrivée - {destinationName}',
+            body: `Bonjour {name},
+
+Vous êtes arrivé à votre destination!
+
+Détails d'arrivée:
+- Destination: {destinationName}
+- Heure d'arrivée: {currentDate}
+
+Bienvenue à {destinationName}! Nous espérons que vous avez eu un voyage agréable.
+
+Si vous avez besoin d'aide, n'hésitez pas à nous contacter.
+
+Cordialement,
+Équipe CES Voyage`
+        },
+        kinyarwanda: {
+            subject: 'Kumenyesha ko wazanye - {destinationName}',
+            body: `Mwaramutse {name},
+
+Wazanye ku cyerekezo cyawe!
+
+Ibisobanura byo kugera:
+- Aho ujya: {destinationName}
+- Igihe cyo kugera: {currentDate}
+
+Murakaza neza {destinationName}! Turifuza ko wari ufite urugendo rwiza.
+
+Niba ukeneye ubundi bufasha, ntuzuhe kutwandikira.
+
+Icyubahiro,
+Ikipe y'Urugendo ya CES`
+        }
     }
 };
 

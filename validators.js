@@ -490,6 +490,215 @@ function sanitizeSmsData(smsData) {
 }
 
 /**
+ * Validate trip notification type
+ * @param {string} notificationType - Trip notification type
+ * @returns {boolean} True if valid notification type
+ */
+function isValidTripNotificationType(notificationType) {
+    const validTypes = ['trip_remaining_time', 'trip_arrival_notice'];
+    const normalizedType = notificationType?.toLowerCase().replace(/[-_\s]/g, '_');
+    return validTypes.includes(normalizedType);
+}
+
+/**
+ * Validate destination name
+ * @param {string} destinationName - Destination name to validate
+ * @returns {boolean} True if valid destination name
+ */
+function isValidDestinationName(destinationName) {
+    // Allow letters, spaces, hyphens, apostrophes, and common punctuation, 1-100 characters
+    const destinationRegex = /^[A-Za-z\s\-'.,()]{1,100}$/;
+    return destinationRegex.test(destinationName);
+}
+
+/**
+ * Validate remaining time format
+ * @param {string} remainingTime - Remaining time to validate
+ * @returns {boolean} True if valid remaining time format
+ */
+function isValidRemainingTime(remainingTime) {
+    // Allow formats like "2 hours", "30 minutes", "1 hour 30 minutes", etc.
+    const timeRegex = /^(\d+\s+(hour|minute|day|week)s?(\s+and\s+\d+\s+(hour|minute)s?)?|\d+\s+(hour|minute|day|week)s?)$/i;
+    return timeRegex.test(remainingTime);
+}
+
+/**
+ * Validate trip notification request data
+ * @param {Object} tripData - Trip notification request data
+ * @returns {Object} Validation result with isValid boolean and errors array
+ */
+function validateTripRequest(tripData) {
+    const errors = [];
+    
+    // Required fields validation
+    if (!tripData) {
+        errors.push('Trip data is required');
+        return { isValid: false, errors };
+    }
+    
+    // At least one contact method is required
+    if (!tripData.email && !tripData.phoneNumber) {
+        errors.push('Either email or phoneNumber is required');
+    }
+    
+    // Email validation (if provided)
+    if (tripData.email) {
+        if (typeof tripData.email !== 'string') {
+            errors.push('email must be a string');
+        } else if (!isValidEmail(tripData.email.trim())) {
+            errors.push('email must be a valid email address');
+        }
+    }
+    
+    // Phone number validation (if provided)
+    if (tripData.phoneNumber) {
+        if (typeof tripData.phoneNumber !== 'string') {
+            errors.push('phoneNumber must be a string');
+        } else if (!isValidPhoneNumber(tripData.phoneNumber.trim())) {
+            errors.push('phoneNumber must be a valid phone number (7-15 digits)');
+        }
+    }
+    
+    // Name validation
+    if (!tripData.name) {
+        errors.push('name is required');
+    } else if (typeof tripData.name !== 'string') {
+        errors.push('name must be a string');
+    } else if (!isValidName(tripData.name.trim())) {
+        errors.push('name must contain only letters, spaces, hyphens, and apostrophes (1-100 characters)');
+    }
+    
+    // Language validation
+    if (!tripData.language) {
+        errors.push('language is required');
+    } else if (typeof tripData.language !== 'string') {
+        errors.push('language must be a string');
+    } else if (!isValidLanguage(tripData.language.trim())) {
+        const availableLanguages = emailTemplates.getAvailableLanguages();
+        errors.push(`language must be one of: ${availableLanguages.join(', ')}`);
+    }
+    
+    // Notification type validation
+    if (!tripData.notificationType) {
+        errors.push('notificationType is required');
+    } else if (typeof tripData.notificationType !== 'string') {
+        errors.push('notificationType must be a string');
+    } else if (!isValidTripNotificationType(tripData.notificationType.trim())) {
+        errors.push('notificationType must be one of: trip_remaining_time, trip_arrival_notice');
+    }
+    
+    // Destination name validation
+    if (!tripData.destinationName) {
+        errors.push('destinationName is required');
+    } else if (typeof tripData.destinationName !== 'string') {
+        errors.push('destinationName must be a string');
+    } else if (!isValidDestinationName(tripData.destinationName.trim())) {
+        errors.push('destinationName must contain only letters, spaces, hyphens, apostrophes, and common punctuation (1-100 characters)');
+    }
+    
+    // Remaining time validation (required for trip_remaining_time)
+    if (tripData.notificationType === 'trip_remaining_time') {
+        if (!tripData.remainingTime) {
+            errors.push('remainingTime is required for trip_remaining_time notifications');
+        } else if (typeof tripData.remainingTime !== 'string') {
+            errors.push('remainingTime must be a string');
+        } else if (!isValidRemainingTime(tripData.remainingTime.trim())) {
+            errors.push('remainingTime must be in a valid format (e.g., "2 hours", "30 minutes", "1 hour 30 minutes")');
+        }
+    }
+    
+    // Optional fields validation
+    if (tripData.tripId !== undefined && tripData.tripId !== null && tripData.tripId !== '') {
+        if (typeof tripData.tripId !== 'string') {
+            errors.push('tripId must be a string');
+        } else if (tripData.tripId.length > 50) {
+            errors.push('tripId must be 50 characters or less');
+        }
+    }
+    
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+}
+
+/**
+ * Validate bulk trip request
+ * @param {Array} tripList - Array of trip request objects
+ * @returns {Object} Validation result
+ */
+function validateBulkTripRequest(tripList) {
+    const errors = [];
+    
+    if (!Array.isArray(tripList)) {
+        errors.push('tripList must be an array');
+        return { isValid: false, errors };
+    }
+    
+    if (tripList.length === 0) {
+        errors.push('tripList array cannot be empty');
+        return { isValid: false, errors };
+    }
+    
+    if (tripList.length > 20) {
+        errors.push('maximum 20 trip notifications allowed per batch');
+        return { isValid: false, errors };
+    }
+    
+    // Validate each trip in the array
+    tripList.forEach((tripData, index) => {
+        const validation = validateTripRequest(tripData);
+        if (!validation.isValid) {
+            validation.errors.forEach(error => {
+                errors.push(`Trip ${index + 1}: ${error}`);
+            });
+        }
+    });
+    
+    return {
+        isValid: errors.length === 0,
+        errors
+    };
+}
+
+/**
+ * Sanitize trip data by trimming strings and removing null/undefined values
+ * @param {Object} tripData - Trip data to sanitize
+ * @returns {Object} Sanitized trip data
+ */
+function sanitizeTripData(tripData) {
+    const sanitized = { ...tripData };
+    
+    // Trim string fields
+    const stringFields = ['email', 'phoneNumber', 'name', 'language', 'notificationType', 'destinationName', 'remainingTime', 'tripId'];
+    
+    stringFields.forEach(field => {
+        if (typeof sanitized[field] === 'string') {
+            sanitized[field] = sanitized[field].trim();
+            
+            // Remove empty strings (convert to undefined)
+            if (sanitized[field] === '') {
+                sanitized[field] = undefined;
+            }
+        }
+    });
+    
+    // Normalize phone number if provided
+    if (sanitized.phoneNumber) {
+        sanitized.phoneNumber = normalizePhoneNumber(sanitized.phoneNumber);
+    }
+    
+    // Remove undefined values
+    Object.keys(sanitized).forEach(key => {
+        if (sanitized[key] === undefined || sanitized[key] === null) {
+            delete sanitized[key];
+        }
+    });
+    
+    return sanitized;
+}
+
+/**
  * Validate environment configuration
  * @returns {Object} Validation result for environment setup
  */
@@ -530,6 +739,9 @@ module.exports = {
     validateSmsRequest,
     validateBulkSmsRequest,
     sanitizeSmsData,
+    validateTripRequest,
+    validateBulkTripRequest,
+    sanitizeTripData,
     validateEnvironmentConfig,
     isValidEmail,
     isValidTicketId,
@@ -537,5 +749,8 @@ module.exports = {
     isValidLanguage,
     isValidSubject,
     isValidPhoneNumber,
-    normalizePhoneNumber
+    normalizePhoneNumber,
+    isValidTripNotificationType,
+    isValidDestinationName,
+    isValidRemainingTime
 };

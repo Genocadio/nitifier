@@ -204,6 +204,142 @@ class EmailService {
     }
 
     /**
+     * Send trip notification email
+     * @param {Object} tripData - Trip notification data
+     * @param {string} tripData.email - Recipient email address
+     * @param {string} tripData.name - Recipient name
+     * @param {string} tripData.language - Language (english, french, kinyarwanda)
+     * @param {string} tripData.notificationType - Trip notification type (trip_remaining_time, trip_arrival_notice)
+     * @param {string} tripData.destinationName - Destination name
+     * @param {string} [tripData.remainingTime] - Remaining time (for trip_remaining_time)
+     * @param {string} [tripData.tripId] - Trip ID
+     * @returns {Promise<Object>} Email sending result
+     */
+    async sendTripEmail(tripData) {
+        try {
+            const { email, name, language, notificationType, destinationName, remainingTime, tripId } = tripData;
+
+            // Normalize language
+            const normalizedLanguage = this.normalizeLanguage(language);
+            
+            // Get template based on notification type
+            const template = emailTemplates.getTemplate(notificationType, normalizedLanguage);
+            if (!template) {
+                throw new Error(`Template not found for notification type: ${notificationType} and language: ${normalizedLanguage}`);
+            }
+
+            // Build email subject
+            const emailSubject = this.buildTripEmailSubject(notificationType, template, destinationName);
+            
+            // Build email body
+            const emailBody = this.buildTripEmailBody(template, {
+                name,
+                destinationName,
+                remainingTime,
+                tripId
+            });
+
+            // Prepare email message
+            const msg = {
+                to: email,
+                from: {
+                    email: this.fromEmail,
+                    name: 'CES Travel Team'
+                },
+                subject: emailSubject,
+                text: emailBody.text,
+                html: emailBody.html
+            };
+
+            // Send email
+            const result = await sgMail.send(msg);
+            
+            console.log(`Trip email sent successfully to ${email} for ${notificationType} to ${destinationName}`);
+            
+            return {
+                success: true,
+                messageId: result[0].headers['x-message-id'],
+                status: 'sent',
+                message: 'Trip email sent successfully'
+            };
+
+        } catch (error) {
+            console.error('Failed to send trip email:', error);
+            
+            return {
+                success: false,
+                status: 'failed',
+                message: error.message,
+                error: error.response?.body || error.message
+            };
+        }
+    }
+
+    /**
+     * Send bulk trip emails for multiple recipients
+     * @param {Array} tripList - Array of trip email data objects
+     * @returns {Promise<Array>} Array of email sending results
+     */
+    async sendBulkTripEmails(tripList) {
+        const results = [];
+        
+        for (const tripData of tripList) {
+            const result = await this.sendTripEmail(tripData);
+            results.push({
+                email: tripData.email,
+                tripId: tripData.tripId,
+                destinationName: tripData.destinationName,
+                notificationType: tripData.notificationType,
+                result
+            });
+        }
+        
+        return results;
+    }
+
+    /**
+     * Build trip email subject based on notification type and template
+     * @param {string} notificationType - Trip notification type
+     * @param {Object} template - Email template
+     * @param {string} destinationName - Destination name
+     * @returns {string} Formatted email subject
+     */
+    buildTripEmailSubject(notificationType, template, destinationName) {
+        let subject = template.subject.replace('{destinationName}', destinationName);
+        return subject;
+    }
+
+    /**
+     * Build trip email body from template with dynamic data
+     * @param {Object} template - Email template
+     * @param {Object} data - Dynamic data for template
+     * @returns {Object} Email body with text and HTML versions
+     */
+    buildTripEmailBody(template, data) {
+        let textBody = template.body;
+        let htmlBody = template.htmlBody || this.convertTextToHtml(template.body);
+        
+        // Replace placeholders with actual data
+        const replacements = {
+            '{name}': data.name || 'Valued Traveler',
+            '{destinationName}': data.destinationName || 'Your Destination',
+            '{remainingTime}': data.remainingTime || '',
+            '{tripId}': data.tripId || '',
+            '{currentDate}': new Date().toLocaleString()
+        };
+        
+        for (const [placeholder, value] of Object.entries(replacements)) {
+            textBody = textBody.replace(new RegExp(placeholder, 'g'), value);
+            htmlBody = htmlBody.replace(new RegExp(placeholder, 'g'), value);
+        }
+        
+        return {
+            text: textBody,
+            html: htmlBody
+        };
+    }
+
+    /**
      * Test email configuration
      * @returns {Promise<Object>} Test result
      */

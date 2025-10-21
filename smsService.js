@@ -291,6 +291,198 @@ class SmsService {
     }
 
     /**
+     * Send trip notification SMS
+     * @param {Object} tripData - Trip notification data
+     * @param {string} tripData.phoneNumber - Recipient phone number (without + or 00)
+     * @param {string} tripData.name - Recipient name
+     * @param {string} tripData.language - Language (english, french, kinyarwanda)
+     * @param {string} tripData.notificationType - Trip notification type (trip_remaining_time, trip_arrival_notice)
+     * @param {string} tripData.destinationName - Destination name
+     * @param {string} [tripData.remainingTime] - Remaining time (for trip_remaining_time)
+     * @param {string} [tripData.tripId] - Trip ID
+     * @returns {Promise<Object>} SMS sending result
+     */
+    async sendTripSms(tripData) {
+        try {
+            const { phoneNumber, name, language, notificationType, destinationName, remainingTime, tripId } = tripData;
+
+            // Normalize language
+            const normalizedLanguage = this.normalizeLanguage(language);
+            
+            // Get template based on notification type
+            const template = smsTemplates.getTemplate(notificationType, normalizedLanguage);
+            if (!template) {
+                throw new Error(`Template not found for notification type: ${notificationType} and language: ${normalizedLanguage}`);
+            }
+
+            // Build SMS message
+            const message = this.buildTripSmsMessage(template, {
+                name,
+                destinationName,
+                remainingTime,
+                tripId
+            });
+
+            // Determine message type (0 for plain text, 1 for Unicode)
+            const messageType = this.determineMessageType(message, normalizedLanguage);
+
+            // Send SMS
+            const result = await this.sendSms(phoneNumber, message, messageType);
+            
+            console.log(`Trip SMS sent successfully to ${phoneNumber} for ${notificationType} to ${destinationName}`);
+            
+            return {
+                success: true,
+                status: 'sent',
+                message: 'Trip SMS sent successfully',
+                phoneNumber,
+                destinationName,
+                notificationType
+            };
+
+        } catch (error) {
+            console.error('Failed to send trip SMS:', error);
+            
+            return {
+                success: false,
+                status: 'failed',
+                message: error.message,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Send bulk trip SMS for multiple recipients
+     * @param {Array} tripList - Array of trip SMS data objects
+     * @returns {Promise<Array>} Array of SMS sending results
+     */
+    async sendBulkTripSms(tripList) {
+        const results = [];
+        
+        // Group SMS by message content to send bulk messages
+        const messageGroups = {};
+        
+        for (const tripData of tripList) {
+            const { phoneNumber, name, language, notificationType, destinationName, remainingTime, tripId } = tripData;
+            
+            // Normalize language
+            const normalizedLanguage = this.normalizeLanguage(language);
+            
+            // Get template based on notification type
+            const template = smsTemplates.getTemplate(notificationType, normalizedLanguage);
+            if (!template) {
+                results.push({
+                    phoneNumber,
+                    tripId,
+                    destinationName,
+                    notificationType,
+                    result: {
+                        success: false,
+                        message: `Template not found for notification type: ${notificationType} and language: ${normalizedLanguage}`
+                    }
+                });
+                continue;
+            }
+
+            // Build SMS message
+            const message = this.buildTripSmsMessage(template, {
+                name,
+                destinationName,
+                remainingTime,
+                tripId
+            });
+
+            // Determine message type
+            const messageType = this.determineMessageType(message, normalizedLanguage);
+            
+            // Create a key for grouping messages with same content
+            const messageKey = `${message}_${messageType}`;
+            
+            if (!messageGroups[messageKey]) {
+                messageGroups[messageKey] = {
+                    message,
+                    type: messageType,
+                    recipients: []
+                };
+            }
+            
+            messageGroups[messageKey].recipients.push({ 
+                phoneNumber, 
+                tripId, 
+                name, 
+                destinationName, 
+                notificationType 
+            });
+        }
+        
+        // Send each group of messages
+        for (const [messageKey, group] of Object.entries(messageGroups)) {
+            try {
+                const phoneNumbers = group.recipients.map(r => r.phoneNumber).join(', ');
+                const result = await this.sendSms(phoneNumbers, group.message, group.type);
+                
+                // Add results for all recipients in this group
+                group.recipients.forEach(recipient => {
+                    results.push({
+                        phoneNumber: recipient.phoneNumber,
+                        tripId: recipient.tripId,
+                        destinationName: recipient.destinationName,
+                        notificationType: recipient.notificationType,
+                        result: {
+                            success: true,
+                            status: 'sent',
+                            message: 'Trip SMS sent successfully'
+                        }
+                    });
+                });
+            } catch (error) {
+                // Add error results for all recipients in this group
+                group.recipients.forEach(recipient => {
+                    results.push({
+                        phoneNumber: recipient.phoneNumber,
+                        tripId: recipient.tripId,
+                        destinationName: recipient.destinationName,
+                        notificationType: recipient.notificationType,
+                        result: {
+                            success: false,
+                            status: 'failed',
+                            message: error.message
+                        }
+                    });
+                });
+            }
+        }
+        
+        return results;
+    }
+
+    /**
+     * Build trip SMS message from template with dynamic data
+     * @param {Object} template - SMS template
+     * @param {Object} data - Dynamic data for template
+     * @returns {string} Formatted SMS message
+     */
+    buildTripSmsMessage(template, data) {
+        let message = template.message;
+        
+        // Replace placeholders with actual data
+        const replacements = {
+            '{name}': data.name || 'Traveler',
+            '{destinationName}': data.destinationName || 'Destination',
+            '{remainingTime}': data.remainingTime || '',
+            '{tripId}': data.tripId || '',
+            '{currentDate}': new Date().toLocaleDateString()
+        };
+        
+        for (const [placeholder, value] of Object.entries(replacements)) {
+            message = message.replace(new RegExp(placeholder, 'g'), value);
+        }
+        
+        return message;
+    }
+
+    /**
      * Test SMS configuration
      * @returns {Promise<Object>} Test result
      */

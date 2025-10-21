@@ -2,7 +2,7 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const EmailService = require('./emailService');
 const SmsService = require('./smsService');
-const { validateEmailRequest, validateSmsRequest } = require('./validators');
+const { validateEmailRequest, validateSmsRequest, validateTripRequest, validateBulkTripRequest } = require('./validators');
 
 const router = express.Router();
 const emailService = new EmailService();
@@ -664,6 +664,388 @@ router.get('/sms/health', (req, res) => {
             error: {
                 message: 'SMS health check failed',
                 code: 'HEALTH_CHECK_FAILED'
+            }
+        });
+    }
+});
+
+// ==================== TRIP NOTIFICATION ROUTES ====================
+
+/**
+ * POST /api/trip/send
+ * Send trip notification via email and/or SMS
+ * 
+ * Body Parameters:
+ * - email: string (optional) - Recipient email address
+ * - phoneNumber: string (optional) - Recipient phone number (without + or 00)
+ * - name: string (required) - Recipient name
+ * - language: string (required) - Language preference (english, french, kinyarwanda)
+ * - notificationType: string (required) - Trip notification type (trip_remaining_time, trip_arrival_notice)
+ * - destinationName: string (required) - Destination name
+ * - remainingTime: string (required for trip_remaining_time) - Remaining time (e.g., "2 hours", "30 minutes")
+ * - tripId: string (optional) - Trip ID
+ */
+router.post('/trip/send', async (req, res) => {
+    try {
+        const tripData = req.body;
+        
+        // Validate input
+        const validation = validateTripRequest(tripData);
+        if (!validation.isValid) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Validation failed',
+                    code: 'VALIDATION_FAILED',
+                    details: validation.errors
+                }
+            });
+        }
+        
+        // Log incoming request (excluding sensitive data)
+        console.log(`Trip notification request received for ${tripData.notificationType} to ${tripData.destinationName}`);
+        
+        const results = {
+            email: null,
+            sms: null
+        };
+        
+        // Send email if provided
+        if (tripData.email) {
+            try {
+                const emailResult = await emailService.sendTripEmail(tripData);
+                results.email = {
+                    success: emailResult.success,
+                    messageId: emailResult.messageId,
+                    status: emailResult.status,
+                    message: emailResult.message,
+                    error: emailResult.success ? null : emailResult.error
+                };
+            } catch (error) {
+                results.email = {
+                    success: false,
+                    status: 'failed',
+                    message: error.message,
+                    error: error.message
+                };
+            }
+        }
+        
+        // Send SMS if provided
+        if (tripData.phoneNumber) {
+            try {
+                const smsResult = await smsService.sendTripSms(tripData);
+                results.sms = {
+                    success: smsResult.success,
+                    status: smsResult.status,
+                    message: smsResult.message,
+                    phoneNumber: smsResult.phoneNumber,
+                    error: smsResult.success ? null : smsResult.error
+                };
+            } catch (error) {
+                results.sms = {
+                    success: false,
+                    status: 'failed',
+                    message: error.message,
+                    error: error.message
+                };
+            }
+        }
+        
+        // Determine overall success
+        const overallSuccess = (results.email === null || results.email.success) && 
+                              (results.sms === null || results.sms.success);
+        
+        res.status(overallSuccess ? 200 : 400).json({
+            success: overallSuccess,
+            data: {
+                destinationName: tripData.destinationName,
+                notificationType: tripData.notificationType,
+                tripId: tripData.tripId,
+                results
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error in trip send endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Internal server error',
+                code: 'INTERNAL_ERROR'
+            }
+        });
+    }
+});
+
+/**
+ * POST /api/trip/send-bulk
+ * Send multiple trip notifications in batch
+ * 
+ * Body Parameters:
+ * - trips: Array of trip objects (same structure as single send)
+ */
+router.post('/trip/send-bulk', async (req, res) => {
+    try {
+        const { trips } = req.body;
+        
+        if (!Array.isArray(trips) || trips.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'trips must be a non-empty array',
+                    code: 'INVALID_INPUT'
+                }
+            });
+        }
+        
+        if (trips.length > 20) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Maximum 20 trip notifications allowed per batch',
+                    code: 'BATCH_SIZE_EXCEEDED'
+                }
+            });
+        }
+        
+        // Validate all trips
+        const validation = validateBulkTripRequest(trips);
+        if (!validation.isValid) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Validation failed',
+                    code: 'VALIDATION_FAILED',
+                    details: validation.errors
+                }
+            });
+        }
+        
+        console.log(`Bulk trip notification request received for ${trips.length} trips`);
+        
+        const results = [];
+        
+        // Process each trip
+        for (const tripData of trips) {
+            const tripResult = {
+                tripId: tripData.tripId,
+                destinationName: tripData.destinationName,
+                notificationType: tripData.notificationType,
+                email: null,
+                sms: null
+            };
+            
+            // Send email if provided
+            if (tripData.email) {
+                try {
+                    const emailResult = await emailService.sendTripEmail(tripData);
+                    tripResult.email = {
+                        success: emailResult.success,
+                        messageId: emailResult.messageId,
+                        status: emailResult.status,
+                        message: emailResult.message,
+                        error: emailResult.success ? null : emailResult.error
+                    };
+                } catch (error) {
+                    tripResult.email = {
+                        success: false,
+                        status: 'failed',
+                        message: error.message,
+                        error: error.message
+                    };
+                }
+            }
+            
+            // Send SMS if provided
+            if (tripData.phoneNumber) {
+                try {
+                    const smsResult = await smsService.sendTripSms(tripData);
+                    tripResult.sms = {
+                        success: smsResult.success,
+                        status: smsResult.status,
+                        message: smsResult.message,
+                        phoneNumber: smsResult.phoneNumber,
+                        error: smsResult.success ? null : smsResult.error
+                    };
+                } catch (error) {
+                    tripResult.sms = {
+                        success: false,
+                        status: 'failed',
+                        message: error.message,
+                        error: error.message
+                    };
+                }
+            }
+            
+            results.push(tripResult);
+        }
+        
+        // Summarize results
+        const summary = results.reduce((acc, result) => {
+            if ((result.email === null || result.email.success) && 
+                (result.sms === null || result.sms.success)) {
+                acc.successful++;
+            } else {
+                acc.failed++;
+            }
+            return acc;
+        }, { successful: 0, failed: 0 });
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                summary,
+                results
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error in bulk trip send endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Internal server error',
+                code: 'INTERNAL_ERROR'
+            }
+        });
+    }
+});
+
+/**
+ * POST /api/trip/validate
+ * Validate trip notification request without sending
+ */
+router.post('/trip/validate', (req, res) => {
+    try {
+        const tripData = req.body;
+        const validation = validateTripRequest(tripData);
+        
+        if (validation.isValid) {
+            res.status(200).json({
+                success: true,
+                data: {
+                    isValid: true,
+                    message: 'Trip notification request is valid'
+                }
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Validation failed',
+                    code: 'VALIDATION_FAILED',
+                    details: validation.errors
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error in trip validation endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Internal server error',
+                code: 'INTERNAL_ERROR'
+            }
+        });
+    }
+});
+
+/**
+ * GET /api/trip/templates
+ * Get available trip notification templates
+ */
+router.get('/trip/templates', (req, res) => {
+    try {
+        const emailTemplates = require('./emailTemplates');
+        const smsTemplates = require('./smsTemplates');
+        
+        // Get trip-specific templates
+        const tripEmailTemplates = Object.keys(emailTemplates.templates)
+            .filter(status => status.startsWith('trip_'))
+            .map(status => ({
+                status,
+                languages: Object.keys(emailTemplates.templates[status])
+            }));
+            
+        const tripSmsTemplates = Object.keys(smsTemplates.templates)
+            .filter(status => status.startsWith('trip_'))
+            .map(status => ({
+                status,
+                languages: Object.keys(smsTemplates.templates[status])
+            }));
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                availableNotificationTypes: ['trip_remaining_time', 'trip_arrival_notice'],
+                availableLanguages: emailTemplates.getAvailableLanguages(),
+                emailTemplates: tripEmailTemplates,
+                smsTemplates: tripSmsTemplates
+            }
+        });
+    } catch (error) {
+        console.error('Error in trip templates endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Internal server error',
+                code: 'INTERNAL_ERROR'
+            }
+        });
+    }
+});
+
+/**
+ * GET /api/trip/template/:type/:language
+ * Get specific trip template by notification type and language
+ */
+router.get('/trip/template/:type/:language', (req, res) => {
+    try {
+        const { type, language } = req.params;
+        const emailTemplates = require('./emailTemplates');
+        const smsTemplates = require('./smsTemplates');
+        
+        const emailTemplate = emailTemplates.getTemplate(type, language);
+        const smsTemplate = smsTemplates.getTemplate(type, language);
+        
+        if (!emailTemplate && !smsTemplate) {
+            return res.status(404).json({
+                success: false,
+                error: {
+                    message: `Template not found for notification type '${type}' and language '${language}'`,
+                    code: 'TEMPLATE_NOT_FOUND'
+                }
+            });
+        }
+        
+        const response = {
+            success: true,
+            data: {
+                notificationType: type,
+                language,
+                emailTemplate: emailTemplate ? {
+                    subject: emailTemplate.subject,
+                    body: emailTemplate.body,
+                    hasHtml: !!emailTemplate.htmlBody
+                } : null,
+                smsTemplate: smsTemplate ? {
+                    message: smsTemplate.message,
+                    characterCount: smsTemplate.message.length,
+                    parts: Math.ceil(smsTemplate.message.length / 153),
+                    isMultiPart: smsTemplate.message.length > 153
+                } : null
+            }
+        };
+        
+        res.status(200).json(response);
+    } catch (error) {
+        console.error('Error in trip template endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Internal server error',
+                code: 'INTERNAL_ERROR'
             }
         });
     }
