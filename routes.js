@@ -316,8 +316,7 @@ router.post('/email/test', async (req, res) => {
  */
 router.get('/email/health', (req, res) => {
     try {
-        const hasEmailUser = !!process.env.EMAIL_USER;
-        const hasEmailPassword = !!process.env.EMAIL_PASSWORD;
+        const hasApiKey = !!process.env.SENDGRID_API_KEY;
         const hasFromEmail = !!process.env.FROM_EMAIL;
         
         res.status(200).json({
@@ -326,10 +325,9 @@ router.get('/email/health', (req, res) => {
                 status: 'healthy',
                 timestamp: new Date().toISOString(),
                 configuration: {
-                    hasEmailUser,
-                    hasEmailPassword,
+                    hasApiKey,
                     hasFromEmail,
-                    isConfigured: hasEmailUser && hasEmailPassword && hasFromEmail
+                    isConfigured: hasApiKey && hasFromEmail
                 }
             }
         });

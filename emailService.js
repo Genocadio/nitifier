@@ -1,91 +1,11 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const emailTemplates = require('./emailTemplates');
 const { validateEmailRequest } = require('./validators');
 
 class EmailService {
     constructor() {
-        this.fromEmail = process.env.FROM_EMAIL || process.env.EMAIL_USER;
-        
-        // Determine SMTP settings based on email provider
-        const emailUser = process.env.EMAIL_USER || '';
-        const emailLower = emailUser.toLowerCase();
-        const isGmail = emailLower.endsWith('@gmail.com');
-        const isOutlook = emailLower.endsWith('@outlook.com') || 
-                          emailLower.endsWith('@hotmail.com') ||
-                          emailLower.endsWith('@live.com') ||
-                          emailLower.endsWith('@msn.com');
-        
-        let smtpConfig;
-        
-        if (isGmail) {
-            // Gmail SMTP configuration
-            // Try port 587 (STARTTLS) first, fallback to 465 (SSL) if needed
-            const useSSL = process.env.SMTP_PORT === '465' || process.env.SMTP_USE_SSL === 'true';
-            smtpConfig = {
-                host: 'smtp.gmail.com',
-                port: useSSL ? 465 : 587,
-                secure: useSSL, // true for 465, false for 587
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD
-                },
-                connectionTimeout: 60000, // 60 seconds
-                greetingTimeout: 30000, // 30 seconds
-                socketTimeout: 60000, // 60 seconds
-                tls: {
-                    rejectUnauthorized: false,
-                    minVersion: 'TLSv1.2'
-                }
-            };
-        } else if (isOutlook) {
-            // Outlook/Hotmail SMTP configuration
-            // Try port 587 (STARTTLS) first, fallback to 465 (SSL) if needed
-            const useSSL = process.env.SMTP_PORT === '465' || process.env.SMTP_USE_SSL === 'true';
-            smtpConfig = {
-                host: 'smtp-mail.outlook.com',
-                port: useSSL ? 465 : 587,
-                secure: useSSL, // true for 465, false for 587
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD
-                },
-                connectionTimeout: 60000, // 60 seconds
-                greetingTimeout: 30000, // 30 seconds
-                socketTimeout: 60000, // 60 seconds
-                tls: {
-                    ciphers: 'SSLv3',
-                    rejectUnauthorized: false,
-                    minVersion: 'TLSv1.2'
-                }
-            };
-        } else {
-            // Default to custom SMTP or Outlook if no provider detected
-            smtpConfig = {
-                host: process.env.SMTP_HOST || 'smtp-mail.outlook.com',
-                port: parseInt(process.env.SMTP_PORT) || 587,
-                secure: process.env.SMTP_SECURE === 'true',
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD
-                },
-                connectionTimeout: 60000, // 60 seconds
-                greetingTimeout: 30000, // 30 seconds
-                socketTimeout: 60000, // 60 seconds
-                ...(process.env.SMTP_TLS_CIPHERS && {
-                    tls: {
-                        ciphers: process.env.SMTP_TLS_CIPHERS,
-                        rejectUnauthorized: false
-                    }
-                })
-            };
-        }
-        
-        // Create Nodemailer transporter
-        // Note: Connection pooling disabled to avoid timeout issues
-        this.transporter = nodemailer.createTransport(smtpConfig);
-        
-        // Log configuration (without password)
-        console.log(`Email service configured for ${isGmail ? 'Gmail' : isOutlook ? 'Outlook' : 'Custom'} SMTP (${smtpConfig.host}:${smtpConfig.port})`);
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        this.fromEmail = process.env.FROM_EMAIL;
     }
 
     /**
@@ -135,22 +55,25 @@ class EmailService {
             });
 
             // Prepare email message
-            const mailOptions = {
-                from: `"CES Team" <${this.fromEmail}>`,
+            const msg = {
                 to: email,
+                from: {
+                    email: this.fromEmail,
+                    name: 'CES Team'
+                },
                 subject: emailSubject,
                 text: emailBody.text,
                 html: emailBody.html
             };
 
             // Send email
-            const result = await this.transporter.sendMail(mailOptions);
+            const result = await sgMail.send(msg);
             
             console.log(`Email sent successfully to ${email} for ticket ${ticketId} with status ${subject}`);
             
             return {
                 success: true,
-                messageId: result.messageId,
+                messageId: result[0].headers['x-message-id'],
                 status: 'sent',
                 message: 'Email sent successfully'
             };
@@ -162,7 +85,7 @@ class EmailService {
                 success: false,
                 status: 'failed',
                 message: error.message,
-                error: error.response || error.message
+                error: error.response?.body || error.message
             };
         }
     }
@@ -317,22 +240,25 @@ class EmailService {
             });
 
             // Prepare email message
-            const mailOptions = {
-                from: `"CES Travel Team" <${this.fromEmail}>`,
+            const msg = {
                 to: email,
+                from: {
+                    email: this.fromEmail,
+                    name: 'CES Travel Team'
+                },
                 subject: emailSubject,
                 text: emailBody.text,
                 html: emailBody.html
             };
 
             // Send email
-            const result = await this.transporter.sendMail(mailOptions);
+            const result = await sgMail.send(msg);
             
             console.log(`Trip email sent successfully to ${email} for ${notificationType} to ${destinationName}`);
             
             return {
                 success: true,
-                messageId: result.messageId,
+                messageId: result[0].headers['x-message-id'],
                 status: 'sent',
                 message: 'Trip email sent successfully'
             };
@@ -344,7 +270,7 @@ class EmailService {
                 success: false,
                 status: 'failed',
                 message: error.message,
-                error: error.response || error.message
+                error: error.response?.body || error.message
             };
         }
     }
@@ -437,22 +363,25 @@ class EmailService {
             }
 
             // Prepare email message
-            const mailOptions = {
-                from: `"CES Team" <${this.fromEmail}>`,
+            const msg = {
                 to: email.trim(),
+                from: {
+                    email: this.fromEmail,
+                    name: 'CES Team'
+                },
                 subject: subject.trim(),
                 text: body.trim(),
                 html: this.convertTextToHtml(body.trim())
             };
 
             // Send email
-            const result = await this.transporter.sendMail(mailOptions);
+            const result = await sgMail.send(msg);
             
             console.log(`Simple email sent successfully to ${email}`);
             
             return {
                 success: true,
-                messageId: result.messageId,
+                messageId: result[0].headers['x-message-id'],
                 status: 'sent',
                 message: 'Email sent successfully'
             };
@@ -464,7 +393,7 @@ class EmailService {
                 success: false,
                 status: 'failed',
                 message: error.message,
-                error: error.response || error.message
+                error: error.response?.body || error.message
             };
         }
     }
@@ -475,15 +404,15 @@ class EmailService {
      */
     async testConfiguration() {
         try {
-            const mailOptions = {
-                from: `"CES Team" <${this.fromEmail}>`,
+            const testMsg = {
                 to: process.env.TEST_EMAIL || 'test@example.com',
+                from: this.fromEmail,
                 subject: 'CES Email Service Test',
                 text: 'This is a test email to verify the email service configuration.',
                 html: '<p>This is a test email to verify the email service configuration.</p>'
             };
 
-            await this.transporter.sendMail(mailOptions);
+            await sgMail.send(testMsg);
             
             return {
                 success: true,
