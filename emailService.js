@@ -19,27 +19,43 @@ class EmailService {
         
         if (isGmail) {
             // Gmail SMTP configuration
+            // Try port 587 (STARTTLS) first, fallback to 465 (SSL) if needed
+            const useSSL = process.env.SMTP_PORT === '465' || process.env.SMTP_USE_SSL === 'true';
             smtpConfig = {
                 host: 'smtp.gmail.com',
-                port: 587,
-                secure: false, // Use STARTTLS
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD
-                }
-            };
-        } else if (isOutlook) {
-            // Outlook/Hotmail SMTP configuration
-            smtpConfig = {
-                host: 'smtp-mail.outlook.com',
-                port: 587,
-                secure: false, // Use STARTTLS
+                port: useSSL ? 465 : 587,
+                secure: useSSL, // true for 465, false for 587
                 auth: {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASSWORD
                 },
+                connectionTimeout: 60000, // 60 seconds
+                greetingTimeout: 30000, // 30 seconds
+                socketTimeout: 60000, // 60 seconds
                 tls: {
-                    ciphers: 'SSLv3'
+                    rejectUnauthorized: false,
+                    minVersion: 'TLSv1.2'
+                }
+            };
+        } else if (isOutlook) {
+            // Outlook/Hotmail SMTP configuration
+            // Try port 587 (STARTTLS) first, fallback to 465 (SSL) if needed
+            const useSSL = process.env.SMTP_PORT === '465' || process.env.SMTP_USE_SSL === 'true';
+            smtpConfig = {
+                host: 'smtp-mail.outlook.com',
+                port: useSSL ? 465 : 587,
+                secure: useSSL, // true for 465, false for 587
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASSWORD
+                },
+                connectionTimeout: 60000, // 60 seconds
+                greetingTimeout: 30000, // 30 seconds
+                socketTimeout: 60000, // 60 seconds
+                tls: {
+                    ciphers: 'SSLv3',
+                    rejectUnauthorized: false,
+                    minVersion: 'TLSv1.2'
                 }
             };
         } else {
@@ -52,16 +68,24 @@ class EmailService {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASSWORD
                 },
+                connectionTimeout: 60000, // 60 seconds
+                greetingTimeout: 30000, // 30 seconds
+                socketTimeout: 60000, // 60 seconds
                 ...(process.env.SMTP_TLS_CIPHERS && {
                     tls: {
-                        ciphers: process.env.SMTP_TLS_CIPHERS
+                        ciphers: process.env.SMTP_TLS_CIPHERS,
+                        rejectUnauthorized: false
                     }
                 })
             };
         }
         
         // Create Nodemailer transporter
+        // Note: Connection pooling disabled to avoid timeout issues
         this.transporter = nodemailer.createTransport(smtpConfig);
+        
+        // Log configuration (without password)
+        console.log(`Email service configured for ${isGmail ? 'Gmail' : isOutlook ? 'Outlook' : 'Custom'} SMTP (${smtpConfig.host}:${smtpConfig.port})`);
     }
 
     /**
