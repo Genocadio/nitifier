@@ -82,6 +82,7 @@ app.get('/', (req, res) => {
             health: 'GET /health',
             email: {
                 send: 'POST /api/email/send',
+                sendSimple: 'POST /api/email/send-simple',
                 sendBulk: 'POST /api/email/send-bulk',
                 templates: 'GET /api/email/templates',
                 template: 'GET /api/email/template/:status/:language',
@@ -183,6 +184,7 @@ const server = app.listen(PORT, () => {
 📋 Available Endpoints:
    Email:
    • POST /api/email/send - Send single email
+   • POST /api/email/send-simple - Send simple email with custom subject and body
    • POST /api/email/send-bulk - Send bulk emails
    • GET  /api/email/templates - Get available templates
    • GET  /api/email/template/:status/:language - Get specific template

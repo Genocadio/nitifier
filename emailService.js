@@ -340,6 +340,65 @@ class EmailService {
     }
 
     /**
+     * Send a simple email with custom subject and body
+     * @param {Object} emailData - Email data
+     * @param {string} emailData.email - Recipient email address
+     * @param {string} emailData.subject - Email subject
+     * @param {string} emailData.body - Email body (plain text)
+     * @returns {Promise<Object>} Email sending result
+     */
+    async sendSimpleEmail(emailData) {
+        try {
+            const { email, subject, body } = emailData;
+
+            // Validate required fields
+            if (!email || !subject || !body) {
+                throw new Error('email, subject, and body are required');
+            }
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) {
+                throw new Error('Invalid email address format');
+            }
+
+            // Prepare email message
+            const msg = {
+                to: email.trim(),
+                from: {
+                    email: this.fromEmail,
+                    name: 'CES Team'
+                },
+                subject: subject.trim(),
+                text: body.trim(),
+                html: this.convertTextToHtml(body.trim())
+            };
+
+            // Send email
+            const result = await sgMail.send(msg);
+            
+            console.log(`Simple email sent successfully to ${email}`);
+            
+            return {
+                success: true,
+                messageId: result[0].headers['x-message-id'],
+                status: 'sent',
+                message: 'Email sent successfully'
+            };
+
+        } catch (error) {
+            console.error('Failed to send simple email:', error);
+            
+            return {
+                success: false,
+                status: 'failed',
+                message: error.message,
+                error: error.response?.body || error.message
+            };
+        }
+    }
+
+    /**
      * Test email configuration
      * @returns {Promise<Object>} Test result
      */

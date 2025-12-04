@@ -343,6 +343,91 @@ router.get('/email/health', (req, res) => {
     }
 });
 
+/**
+ * POST /api/email/send-simple
+ * Send a simple email with custom subject and body
+ * 
+ * Body Parameters:
+ * - email: string (required) - Recipient email address
+ * - subject: string (required) - Email subject
+ * - body: string (required) - Email body (plain text)
+ */
+router.post('/email/send-simple', async (req, res) => {
+    try {
+        const { email, subject, body } = req.body;
+        
+        // Validate required fields
+        if (!email || !subject || !body) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'email, subject, and body are required',
+                    code: 'MISSING_REQUIRED_FIELDS'
+                }
+            });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Invalid email address format',
+                    code: 'INVALID_EMAIL'
+                }
+            });
+        }
+
+        // Validate subject and body are strings
+        if (typeof subject !== 'string' || typeof body !== 'string') {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'subject and body must be strings',
+                    code: 'INVALID_INPUT_TYPE'
+                }
+            });
+        }
+
+        // Log incoming request (excluding body content for privacy)
+        console.log(`Simple email request received for ${email} with subject: ${subject.substring(0, 50)}...`);
+        
+        // Send email
+        const result = await emailService.sendSimpleEmail({ email, subject, body });
+        
+        if (result.success) {
+            res.status(200).json({
+                success: true,
+                data: {
+                    messageId: result.messageId,
+                    status: result.status,
+                    message: result.message,
+                    recipient: email
+                }
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: {
+                    message: result.message,
+                    details: result.error,
+                    code: 'EMAIL_SEND_FAILED'
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error in simple email send endpoint:', error);
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Internal server error',
+                code: 'INTERNAL_ERROR'
+            }
+        });
+    }
+});
+
 // ==================== SMS ROUTES ====================
 
 /**
