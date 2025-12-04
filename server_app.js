@@ -203,8 +203,10 @@ const server = app.listen(PORT, () => {
 
 🔧 Configuration:
    Email:
-   • SendGrid API Key: ${process.env.SENDGRID_API_KEY ? '✅ Set' : '❌ Missing'}
+   • Email User (Gmail/Outlook): ${process.env.EMAIL_USER ? '✅ Set' : '❌ Missing'}
+   • Email Password: ${process.env.EMAIL_PASSWORD ? '✅ Set' : '❌ Missing'}
    • From Email: ${process.env.FROM_EMAIL || '❌ Missing'}
+   • Provider: ${process.env.EMAIL_USER ? (process.env.EMAIL_USER.toLowerCase().endsWith('@gmail.com') ? 'Gmail' : process.env.EMAIL_USER.toLowerCase().match(/@(outlook|hotmail|live|msn)\.com$/) ? 'Outlook' : 'Custom') : 'Not configured'}
    
    SMS:
    • SMS API Token: ${process.env.SMS_API_TOKEN ? '✅ Set' : '❌ Missing'}

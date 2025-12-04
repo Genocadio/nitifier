@@ -705,10 +705,15 @@ function sanitizeTripData(tripData) {
 function validateEnvironmentConfig() {
     const errors = [];
     
-    if (!process.env.SENDGRID_API_KEY) {
-        errors.push('SENDGRID_API_KEY environment variable is required');
-    } else if (!process.env.SENDGRID_API_KEY.startsWith('SG.')) {
-        errors.push('SENDGRID_API_KEY must start with "SG."');
+    // Email configuration validation (Outlook/Nodemailer)
+    if (!process.env.EMAIL_USER) {
+        errors.push('EMAIL_USER environment variable is required');
+    } else if (!isValidEmail(process.env.EMAIL_USER)) {
+        errors.push('EMAIL_USER must be a valid email address');
+    }
+    
+    if (!process.env.EMAIL_PASSWORD) {
+        errors.push('EMAIL_PASSWORD environment variable is required');
     }
     
     if (!process.env.FROM_EMAIL) {
